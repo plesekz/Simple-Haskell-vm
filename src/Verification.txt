@@ -1,0 +1,68 @@
+exec (acomp a) (0,s,[]) == (length (acomp a), s, [aval a s])
+
+Proof:
+*
+[case a: (N n)]
+[applying acomp a)]		=	exec ([LOADI n]) (0,s,[]) == (length ([LOADI b]), s, [aval (N n) s])
+[applying length]		=	exec ([LOADI n]) (0,s,[]) == (1+length([]), s, [aval (N n) s])		
+				=	exec ([LOADI n]) (0,s,[]) == (1+0, s, [aval (N n) s])
+				=	exec ([LOADI n]) (0,s,[]) == (1, s, [aval (N n) s])
+
+[applying aval]			=	exec ([LOADI n]) (0,s,[]) == (1, s, [n])
+[applying exec]			=	iexec (LOADI n) (0,s,[]) == (1, s, [n])
+[applying iexec]		=	(0+1, s, n:[]) == (1, s, [n])
+				=	(1, s, [n]) == (1, s, [n])
+
+*
+[case a: (V name)]		=	exec (acomp (V name)) (0,s,[]) == (length (acomp (V name)), s, [aval (V name) s])
+[applying acomp a]		=	exec ([LOAD name]) (0,s,[]) == (length [LOAD name]), s, [aval (V name) s])
+[applying length]		=	exec ([LOAD name]) (0,s,[]) == (1+length([])), s, [aval (V name) s])
+				=	exec ([LOAD name]) (0,s,[]) == (1+0), s, [aval (V name) s])
+				=	exec ([LOAD name]) (0,s,[]) == (1), s, [aval (V name) s])
+
+[applying aval]			=	exec ([LOAD name]) (0,s,[]) == (1), s, [aval (V name) s])
+	*
+	[case name ∈ s -> n]	=	exec ([LOAD name]) (0,s,[]) == (1, s, [n])
+	[applying exec]		=	iexec (LOAD name) (0,s,[]) == (1, s, [n])
+	[applying iexec]	=	(0+1, s, [n]) == (1, s, [n])
+				=	(1, s, [n]) == (1, s, [n])
+
+	*
+	[case name ∉ s]		= 	exec ([LOAD name]) (0,s,[]) == (1, s, [0])
+	[applying exec]		=	iexec (LOAD name) (0,s,[]) == (1, s, [0])
+	[applying iexec]	=	(0+1, s, 0:[]) == (1,s,[0])
+				=	(1, s, [0]) == 1,s,[0])
+
+*
+[case a: (Plus b c)]		=	exec (acomp (Plus b c)) (0,s,[]) == (length (acomp (Plus b c)), s, [aval (Plus b c) s])
+[applying acomp a)]		=	exec (acomp b ++ acomp c ++ [ADD]) (0,s,[]) == (length (acomp b ++ acomp c ++ [ADD]), s, [aval (Plus b c) s])
+[assume]			=	acomp b and acomp c must result in a list of instructions I and I' respectively, if case a: (Plus b c) holds.
+					Lists I and I' evaluate to numbers that can be represented as (N n) and (N n') respectively.
+					In other words:
+					p(n) <=> acomp (Plus b c) = acomp (Plus (N n) (N n'))
+				=	exec (I ++ I' ++ [ADD]) (0,s,[]) == (length (I ++ I' ++ [ADD]), s, [aval (Plus (N n) (N n')) s])
+				=	exec [LOADI n, LOADI n', ADD] (0,s,[]) == (length ([LOAD n, LOAD n', ADD]), s, [aval (Plus (N n) (N n')) s])
+
+[applying length]		=	exec [LOADI n, LOADI n', ADD] (0,s,[]) == (1+length (LOAD n', ADD]), s, [aval (Plus (N n) (N n')) s])
+				=	exec [LOADI n, LOADI n', ADD] (0,s,[]) == (1+1+length [ADD]), s, [aval (Plus (N n) (N n')) s])
+				=	exec [LOADI n, LOADI n', ADD] (0,s,[]) == (1+1+1+length []), s, [aval (Plus (N n) (N n')) s])
+				=	exec [LOADI n, LOADI n', ADD] (0,s,[]) == (1+1+1+0]), s, [aval (Plus (N n) (N n')) s])
+				=	exec [LOADI n, LOADI n', ADD] (0,s,[]) == (3, s, [aval (Plus (N n) (N n')) s])
+
+[applying aval]			=	exec [LOADI n, LOADI n', ADD] (0,s,[]) == (3, s, [aval (N n) s + aval (N n')) s])
+				=	exec [LOADI n, LOADI n', ADD] (0,s,[]) == (3, s, [n+n'])
+
+[n+n'=m]			=	exec [LOADI n, LOADI n', ADD] (0,s,[]) == (3, s, [m])
+[apply exec]			=	exec [LOADI n, LOADI n', ADD] (iexec (LOADI n) (0,s,[])) == (3, s, [m])
+[apply iexec]			=	exec [LOADI n, LOADI n', ADD] (1, s, [n]) == (3, s, [m])
+[apply exec]			=	exec [LOADI n, LOADI n', ADD] (iexec (LOADI n') (1,s,[n])) == (3, s, [m])
+[apply iexec]			=	exec [LOADI n, LOADI n', ADD] (2, s, [n', n]) == (3, s, [m])
+[apply exec]			=	iexec ADD (2, s, [n', n]) == (3, s, [m])
+[apply iexec]			=	(2+1, s, add [n', n]) == (3, s, [m])
+				=	(3, s, add [n', n]) == (3, s, [m])
+
+[apply add]			=	(3, s, [n' + n]:[]) == (3, s, [m])
+				=	(3, s, [n + n']:[]) == (3, s, [m])
+
+[n+n'=m]			=	(3, s, [m]:[]) == (3, s, [m])
+				=	(3, s, [m]) == (3, s, [m])
